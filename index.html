@@ -1,69 +1,150 @@
 <html>
 <head>
-    <title>listn.dev</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
     <style>
-        /* Fade out effect */
-        .fade-out {
-            animation: fadeOut 1s forwards;
+        .profile-pic-container:hover .edit-text {
+            opacity: 1;
+        }
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        .install-loader:hover {
+            text-decoration: underline;
+        }
+        /* Style for the barely noticeable button */
+        .hidden-button {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 20px; /* Small width */
+            height: 20px; /* Small height */
+            background-color: transparent; /* Transparent background */
+            border: none; /* No border */
+            cursor: pointer; /* Pointer cursor */
+            z-index: 1000; /* Ensure it's on top */
+        }
+        /* Glowing effect for Administrator text */
+        #admin-text {
+            font-size: 24px;
+            color: #FF7F7F; /* Light red color */
+            text-align: center;
+            margin-bottom: 10px; /* Space below the Administrator text */
+            animation: glow 1.5s infinite alternate;
+            font-weight: bold; /* Bold text */
+            text-decoration: underline; /* Underlined text */
         }
 
-        @keyframes fadeOut {
+        @keyframes glow {
             0% {
-                opacity: 1;
-                background-color: rgba(0, 0, 0, 1);
+                text-shadow: 0 0 5px #FF7F7F, 0 0 10px #FF7F7F, 0 0 15px #FF4C4C, 0 0 20px #FF4C4C, 0 0 25px #FF4C4C; /* Slightly darker red */
             }
             100% {
-                opacity: 0;
-                background-color: rgba(0, 0, 0, 0);
+                text-shadow: 0 0 10px #FF7F7F, 0 0 20px #FF7F7F, 0 0 30px #FF4C4C, 0 0 40px #FF4C4C, 0 0 50px #FF4C4C; /* Slightly darker red */
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#1b1b1b] text-white" oncontextmenu="return false;" onkeydown="return disableCtrlU(event);">
+    <nav class="bg-[#121212] p-4 flex justify-center space-x-8">
+        <a class="text-white font-bold underline" href="#">Home</a>
+        <a class="text-white nav-link cursor-pointer" onclick="window.location.href='https://www.amazon.com'">Resell</a>
+        <a class="text-white nav-link cursor-pointer" onclick="window.location.href='https://www.amazon.com'">Tickets</a>
+        <a class="text-white nav-link cursor-pointer" onclick="window.location.href ='https://www.amazon.com'">Discord</a>
+    </nav>
+    <div class="flex flex-col p-4 space-y-4 items-start">
+        <div class="bg-[#121212] p-4 rounded-lg flex flex-col items-center space-y-4 w-full max-w-xs">
+            <div class="relative profile-pic-container">
+                <img alt="User  profile picture" class="rounded-full" height="100" id="profile-pic" src="https://placehold.co/100x100/gray/gray" width="100"/>
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 transition-opacity duration-300 edit-text">
+                    <span class="text-white">Edit</span>
+                </div>
+                <input accept="image/*" class="hidden" id="file-input" onchange="loadFile(event)" type="file"/>
+            </div>
+            <!-- Glowing Administrator text -->
+            <p id="admin-text" class="hidden">Administrator</p>
+            <div class="text-center">
+                <p>UID: <span id="user-id"></span></p>
+                <p>You're <span class="font-bold">listn's</span> referral</p>
+                <p>active subs: 0</p>
+                <p class="text-gray-400 text-sm mt-2">follow the consumer rights act of 2015 to be viable for any and all refunds.<br/>listn.dev, 2025</p>
+            </div>
+        </div>
+        <div class="bg-[#121212] p-4 rounded-lg text-center flex flex-col justify-center w-full max-w-xs">
+            <div>
+                <p class="text-xl font-bold install-loader cursor-pointer" onclick="window.location.href='https://www.amazon.com'">&lt;&lt;Install loader&gt;&gt;</p>
+                <p class="text-gray-400 text-sm mt-2">attempts to crack our loader will be sent to staff and will result in a ban from dlc</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Barely noticeable button -->
+    <button class="hidden-button" id="hidden-button"></button>
+
+    <script>
+        document.querySelector('.profile-pic-container').addEventListener('click', function() {
+            document.getElementById('file-input').click();
+        });
+
+        function loadFile(event) {
+            var output = document.getElementById('profile-pic');
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                var img = new Image();
+                img.src = reader.result;
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    canvas.width = 100;
+                    canvas.height = 100;
+                    ctx.drawImage(img, 0, 0, 100, 100);
+                    var dataURL = canvas.toDataURL();
+                    output.src = dataURL;
+                    localStorage.setItem('profilePic', dataURL); // Save to local storage
+                }
+            }
+            if (file) {
+                reader.readAsDataURL(file);
             }
         }
 
-        /* Initial black screen */
-        .black-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 1); /* Fully opaque */
-            z-index: 9999;
-        }
-
-        /* Allow interaction with the form */
-        .interactive {
-            position: relative;
-            z-index: 1; /* Ensure form is above the black screen */
-        }
-    </style>
-    <script>
         window.onload = function() {
-            // Fade out the black screen after 0.5 seconds
-            setTimeout(function() {
-                const blackScreen = document.getElementById('black-screen');
-                blackScreen.classList.add('fade-out');
+            var savedProfilePic = localStorage.getItem('profilePic'); // Load profile picture from local storage
+            if (savedProfilePic) {
+                document.getElementById('profile-pic').src = savedProfilePic; // Set the profile picture
+            }
 
-                // Hide the black screen completely after the fade-out
-                setTimeout(function() {
-                    blackScreen.style.display = 'none'; // Hide the black screen completely
-                }, 1000); // Match this duration with the fade-out duration
-            }, 500); // 0.5 seconds delay
-        };
+            var userId = localStorage.getItem('userId');
+            if (!userId) {
+                userId = Math.floor(Math.random() * (15 - 9 + 1)) + 9; // Generate a random number between 9 and 15
+                localStorage.setItem('userId', userId);
+            }
+            document.getElementById('user-id').innerText = userId;
+
+            // Check if the Administrator text should be displayed
+            var isAdminVisible = localStorage.getItem('isAdminVisible');
+            if (isAdminVisible === 'true') {
+                document.getElementById('admin-text').classList.remove('hidden'); // Show Administrator text
+            }
+
+            let clickCount = 0; // Initialize click count
+
+            document.getElementById('hidden-button').addEventListener('click', function() {
+                clickCount++; // Increment click count
+                if (clickCount === 3) {
+                    document.getElementById('admin-text').classList.remove('hidden'); // Show Administrator text
+                    localStorage.setItem('isAdminVisible', 'true'); // Save visibility state
+                }
+            });
+        }
+
+        function disableCtrlU(e) {
+            if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+                e.preventDefault();
+                return false;
+            }
+        }
     </script>
-</head>
-<body class="bg-[#141414] flex items-center justify-center min-h-screen">
-    <div id="black-screen" class="black-screen"></div>
-    <div class="text-center interactive">
-        <h1 class="text-white text-5xl font-bold mb-2 leading-none">listn <span class="text-gray-500 text-sm align-top">BETA</span></h1>
-        <div class="bg-[#1B1B1B] p-6 rounded-lg shadow-lg w-80">
-            <h2 class="text-white text-2xl font-semibold mb-4">Sign In</h2>
-            <form action="https://www.amazon.com" method="get">
-                <input type="text" placeholder="Username" class="w-full p-3 mb-3 bg-[#292929] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="password" placeholder="Password" class="w-full p-3 mb-4 bg-[#292929] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">login</button>
-            </form>
-            <p class="text-gray-500 mt-4">don't have an account? <a href="https://klez-src.github.io/signup/" class="text-white underline">Sign Up</a></p>
-        </div>
-    </div>
 </body>
 </html>
